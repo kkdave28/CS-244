@@ -426,7 +426,6 @@ void derrivative_x_y(short int *smoothedim, int rows, int cols,
       (*delta_y)[pos] = smoothedim[pos] - smoothedim[pos-cols];
    }
 }
-
 //Added by Jiang Wan for multi-thread 
 struct thread_args_x
 {
@@ -459,7 +458,6 @@ void *blur_y(void *arguments)
    * Blur in the x - direction.
    ****************************************************************************/
    struct thread_args_y *args = arguments; 
-	
    unsigned char *image = args->image;
    int rows = args->rows;
    int cols = args->cols;
@@ -471,8 +469,7 @@ void *blur_y(void *arguments)
    short int ** smoothedim = args->smoothness;
    int r, c, rr;
    float dot, sum;
-
-   if(VERBOSE) printf("   Bluring the image in the X-direction.\n");
+   if(VERBOSE) printf("   Bluring the image in the Y-direction.\n");
    for(c=0;c<cols;c++){
       for(r=row_s;r<row_e;r++){
          dot = 0.0;
@@ -564,7 +561,7 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
    pthread_t thread[N_T];
    int iret[N_T];
    struct thread_args_x args[N_T];
-   struct thread_args_y argsy[N_T];
+   
    int col_per_t = cols/N_T;
    int row_per_t = rows/N_T;
    int i;
@@ -581,7 +578,9 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
       args[i].tempim = tempim;
       iret[i] = pthread_create(&thread[i], NULL, &blur_x, &args[i]);
    }
-
+// Changes made by me
+   
+   struct thread_args_y argsy[N_T];
    for(i=0; i<N_T; i++)
    {
    	pthread_join(thread[i], NULL);
