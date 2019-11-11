@@ -4,9 +4,9 @@
 #include <iostream>
 #include <unistd.h>
 #include <raspicam/raspicam.h>
-#include "canny_local_raspicam.c"
+#include "canny_local_raspicam_multi.c"
 using namespace std;
-
+#define DEBUG 0
 #define WIDTH 176
 #define HEIGHT 144
 #define NFRAME 1.0
@@ -58,7 +58,8 @@ main(int argc, char *argv[])
    raspicam::RaspiCam Camera; //Cmaera object
    Camera.setFormat(raspicam::RASPICAM_FORMAT_GRAY);
    Camera.setCaptureSize(WIDTH, HEIGHT);
-
+   double time_elapsed = 0.0;
+   int num_frames = 0;
    //Open camera 
    cout<<"Opening Camera..."<<endl;
    if ( !Camera.open()) {cerr<<"Error opening camera"<<endl;return -1;}
@@ -75,7 +76,7 @@ main(int argc, char *argv[])
       image=new unsigned char[bytes];
    
       clock_t begin, end;
-      double time_elapsed;
+      
 
       begin = clock();
       //capture
@@ -104,13 +105,16 @@ main(int argc, char *argv[])
          exit(1);
       }
       end = clock();
-      time_elapsed = (double) (end - begin) / CLOCKS_PER_SEC;
-
-      printf("Elapsed time for processing frame %i: %lf.\n", count, time_elapsed);
-      printf("Frame Rate is %01lf.\n", NFRAME/time_elapsed);
-
+      time_elapsed += (double) (end - begin) / CLOCKS_PER_SEC;
+      num_frames++;
+      #if DEBUG
+         printf("Elapsed time for processing frame %i: %lf.\n", count, time_elapsed);
+         printf("Frame Rate is %01lf.\n", NFRAME/time_elapsed);
+      #endif
       //free resrources    
       delete image;
    }
-    return 0;
+   printf("TOTAL ELAPSED FOR PROCESSING %i FRAMES: %lf.\n", num_frames, time_elapsed);
+   printf("AVERAGE FRAME RATE IS %01lf.\n", num_frames/time_elapsed);
+   return 0;
 }
